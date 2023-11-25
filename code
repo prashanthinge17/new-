@@ -1,0 +1,87 @@
+# new
+import pygame
+import sys
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Constants
+WIDTH, HEIGHT = 400, 400
+GRID_SIZE = 4
+TILE_SIZE = WIDTH // GRID_SIZE
+FPS = 60
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Create the screen
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Sliding Puzzle")
+clock = pygame.time.Clock()
+
+# Function to draw the grid and tiles
+def draw_grid(grid):
+    for row in range(GRID_SIZE):
+        for col in range(GRID_SIZE):
+            pygame.draw.rect(screen, WHITE, (col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE), 2)
+            number = grid[row][col]
+            if number != 0:
+                font = pygame.font.Font(None, 36)
+                text = font.render(str(number), True, BLACK)
+                text_rect = text.get_rect(center=(col * TILE_SIZE + TILE_SIZE // 2, row * TILE_SIZE + TILE_SIZE // 2))
+                screen.blit(text, text_rect)
+
+# Function to shuffle the grid
+def shuffle_grid(grid):
+    flat_grid = [num for row in grid for num in row]
+    random.shuffle(flat_grid)
+    return [flat_grid[i:i+GRID_SIZE] for i in range(0, len(flat_grid), GRID_SIZE)]
+
+# Function to check if the puzzle is solved
+def is_solved(grid):
+    flat_grid = [num for row in grid for num in row]
+    return flat_grid == sorted(flat_grid)
+
+# Initial grid setup
+original_grid = [[col + row * GRID_SIZE for col in range(GRID_SIZE)] for row in range(GRID_SIZE)]
+current_grid = shuffle_grid(original_grid)
+
+# Main game loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+        if event.type == pygame.KEYDOWN:
+            # Find the position of the empty space (0)
+            empty_row, empty_col = [(i, j) for i, row in enumerate(current_grid) for j, num in enumerate(row) if num == 0][0]
+
+            # Move tile left
+            if event.key == pygame.K_LEFT and empty_col < GRID_SIZE - 1:
+                current_grid[empty_row][empty_col], current_grid[empty_row][empty_col + 1] = current_grid[empty_row][empty_col + 1], current_grid[empty_row][empty_col]
+
+            # Move tile right
+            elif event.key == pygame.K_RIGHT and empty_col > 0:
+                current_grid[empty_row][empty_col], current_grid[empty_row][empty_col - 1] = current_grid[empty_row][empty_col - 1], current_grid[empty_row][empty_col]
+
+            # Move tile up
+            elif event.key == pygame.K_UP and empty_row < GRID_SIZE - 1:
+                current_grid[empty_row][empty_col], current_grid[empty_row + 1][empty_col] = current_grid[empty_row + 1][empty_col], current_grid[empty_row][empty_col]
+
+            # Move tile down
+            elif event.key == pygame.K_DOWN and empty_row > 0:
+                current_grid[empty_row][empty_col], current_grid[empty_row - 1][empty_col] = current_grid[empty_row - 1][empty_col], current_grid[empty_row][empty_col]
+
+    screen.fill(WHITE)
+    draw_grid(current_grid)
+    pygame.display.flip()
+
+    if is_solved(current_grid):
+        print("Puzzle Solved!")
+        pygame.quit()
+        sys.exit()
+
+    clock.tick(FPS)
