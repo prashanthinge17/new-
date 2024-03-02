@@ -1,0 +1,3 @@
+Prepare Deployment Environments: Create different branches or folders for each environment (e.g., staging, production) in your repository.
+
+Setup GitHub Actions Workflow for Deployment: Create a .github/workflows/deploy.yml file with the following content:
